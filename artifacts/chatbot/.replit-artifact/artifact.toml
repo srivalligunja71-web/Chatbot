@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Chatbot"
+description = "An AI chat app for asking questions and having helpful conversations, with a responsive chat interface and recent conversation history."
+version = "1.0.0"
+id = "artifacts/chatbot"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22967
+
+[services.development]
+run = "pnpm --filter @workspace/chatbot run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/chatbot", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/chatbot/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22967"
+BASE_PATH = "/"
