@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: chat
+    description: AI chat operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /chat:
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a message and receive an AI response stream
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: Server-sent event stream containing the assistant response
+          content:
+            text/event-stream: {}
+        "400":
+          description: Invalid chat request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: AI service is not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +63,35 @@ components:
           type: string
       required:
         - status
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 12000
+      required:
+        - role
+        - content
+    ChatRequest:
+      type: object
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+      required:
+        - messages
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 
